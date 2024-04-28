@@ -13,7 +13,8 @@
 #define trigger PIN_A2
 #define echo PIN_A3
  
-#define uzaklik 0.50  //ultrasonik sensör tetikleme değeri cm/M cinsinden
+#define uzaklik 0.52  //ultrasonik sensör otomatik tetikleme değeri cm/m cinsinden
+#define manuel_uzaklik 0.06  //ultrasonik sensör el ile manuel tetikleme değeri cm/m cinsinden
 #define tetik_sure 10
 #define final_tetik_sure 5
 
@@ -85,10 +86,20 @@ void main() {
   
     ultrasonik();
     
-    if ( durum == 0 && distance < uzaklik) {
+    if(distance <= manuel_uzaklik) { 
+          
+                  for(int j = 0; j <= 2 ; j++)
+                     {
+                      output_low(BLUE); delay_ms(250);
+                      output_high(BLUE);  delay_ms(250);
+                     } 
+      
+                output_high(BLUE);sifon_hareket(); delay_ms(1000); }  //eli yakşaltırarak anında sifon.
+    
+    else if ( durum == 0 && distance < uzaklik) {
          
         bayrak++; output_low(RED);  delay_ms(75); output_high(RED);
-        delay_ms(925);
+        delay_ms(675);
         
         if (bayrak >= tetik_sure) { durum = 1; output_low(GREEN); output_high(RED); output_high(BLUE); }  //sifon tetiklenmesi için durum 1 oldu (kişi kalkınca)
         
@@ -97,7 +108,7 @@ void main() {
      else if (durum == 1 && distance > uzaklik ) { //kişi kalktı, sifon tetiklendi.
    
         sonbayrak++; output_low(GREEN);  delay_ms(75); output_high(GREEN);
-        delay_ms(925);
+        delay_ms(675);
            
            if (sonbayrak >= final_tetik_sure)
                {       
@@ -124,7 +135,7 @@ void main() {
       }
       
    // printf("uzaklik:   %2.2fm\nEcho=%1.3fms\n", distance, echotime);
-   delay_ms(100);
+   delay_ms(250);
   }
 
 }
