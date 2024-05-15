@@ -8,15 +8,16 @@
 #define BLUE  PIN_B6
 #define GREEN PIN_B5
 #define RED  PIN_B4
+ 
 
 #define servoPin PIN_B3
 #define trigger PIN_A2
 #define echo PIN_A3
  
-#define uzaklik 0.52  //ultrasonik sensör otomatik tetikleme değeri cm/m cinsinden
-#define manuel_uzaklik 0.06  //ultrasonik sensör el ile manuel tetikleme değeri cm/m cinsinden
-#define tetik_sure 10
-#define final_tetik_sure 5
+#define uzaklik 0.55  //ultrasonik sensör otomatik tetikleme değeri cm/m cinsinden
+#define manuel_uzaklik 0.10  //ultrasonik sensör el ile manuel tetikleme değeri cm/m cinsinden
+#define tetik_sure 12
+#define final_tetik_sure 6
 
 float seshiz, distance, echotime;
 float timer1cycle = 0.2487;  // 16300/65536;ms
@@ -40,11 +41,23 @@ void servo(long int servoAngle, long int servoDelay) {  // 500 - 2500 arası 180
 }
 
 void sifon_hareket() {
-
  
+  output_high(BLUE); output_high(RED); output_high(GREEN);
+   
+  for(int j = 0; j <= 2 ; j++)
+                     {
+                      output_low(BLUE); delay_ms(100);
+                      output_high(BLUE);  delay_ms(100);
+                     } 
+                     
+  output_high(BLUE); output_high(RED); output_high(GREEN);
+  
   servo(500, 1000);
-  servo(1250, 2000);
+  servo(1250, 3000);
   servo(500, 0);
+  
+   delay_ms(20000);
+  
 }
 
 
@@ -86,47 +99,43 @@ void main() {
   
     ultrasonik();
     
-    if(distance <= manuel_uzaklik) { 
-          
-                  for(int j = 0; j <= 2 ; j++)
-                     {
-                      output_low(BLUE); delay_ms(250);
-                      output_high(BLUE);  delay_ms(250);
-                     } 
-      
-                output_high(BLUE);sifon_hareket(); delay_ms(1000); }  //eli yakşaltırarak anında sifon.
+    if(distance <= manuel_uzaklik) {   sifon_hareket();  }  //eli yakşaltırarak anında sifon.
     
     else if ( durum == 0 && distance < uzaklik) {
          
         bayrak++; output_low(RED);  delay_ms(75); output_high(RED);
         delay_ms(675);
         
-        if (bayrak >= tetik_sure) { durum = 1; output_low(GREEN); output_high(RED); output_high(BLUE); }  //sifon tetiklenmesi için durum 1 oldu (kişi kalkınca)
+        if (bayrak >= tetik_sure) { 
+        
+          for(int j = 0; j <= 2 ; j++)
+                     {
+                      output_low(RED); delay_ms(100);
+                      output_high(RED);  delay_ms(100);
+                     } 
+                     
+        durum = 1; 
+        output_low(GREEN); output_high(RED); output_high(BLUE); }  //sifon tetiklenmesi için durum 1 oldu (kişi kalkınca)
         
       }
     
      else if (durum == 1 && distance > uzaklik ) { //kişi kalktı, sifon tetiklendi.
    
-        sonbayrak++; output_low(GREEN);  delay_ms(75); output_high(GREEN);
-        delay_ms(675);
+        sonbayrak++; 
+
+
+ output_high(GREEN); delay_ms(125); output_low(GREEN);  delay_ms(150);
+ output_low(GREEN);  delay_ms(250);
+
            
            if (sonbayrak >= final_tetik_sure)
                {       
-                  output_low(GREEN); output_high(RED); output_high(GREEN);
-                  for(int j = 0; j <= 2 ; j++)
-                     {
-                      output_low(BLUE); delay_ms(250);
-                      output_high(BLUE);  delay_ms(250);
-                     } 
-      
-                output_high(BLUE);
-                sifon_hareket();
-       
-                delay_ms(50);
+               
+                sifon_hareket(); 
                 
                sonbayrak = 0; bayrak=0; durum=0; set_timer1(0);
-                delay_ms(1000);
-               
+                delay_ms(50);
+        
                }
  
       } 
@@ -139,5 +148,7 @@ void main() {
   }
 
 }
+
+
 
 
